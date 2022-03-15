@@ -31,6 +31,8 @@ package tech.units.indriya.unit;
 
 import java.util.Set;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.measure.Dimension;
 import javax.measure.Unit;
@@ -42,6 +44,9 @@ import javax.measure.spi.SystemOfUnits;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static tech.units.indriya.unit.Units.*;
@@ -54,6 +59,10 @@ import static tech.units.indriya.unit.Units.*;
  */
 public class UnitsTest {
     static final Logger logger = Logger.getLogger(UnitsTest.class.getName());
+
+	public static Stream<Arguments> getUnits(){
+		return Units.getInstance().getUnits().stream().map(Arguments::of).collect(Collectors.toList()).stream();
+	}
 
     private SystemOfUnits sou;
 
@@ -83,14 +92,14 @@ public class UnitsTest {
         assertNotNull(result);
         assertEquals("s", result.toString());
     }
-    
+
     @Test
     public void testByClassLength() {
         Unit<?> result = sou.getUnit(Length.class);
         assertNotNull(result);
         assertEquals("m", result.toString());
     }
-    
+
     @Test
     public void testByClassAndDimensionLength() {
         Unit<?> result = sou.getUnit(Length.class);
@@ -100,7 +109,7 @@ public class UnitsTest {
         assertEquals(UnitDimension.LENGTH, dim);
         testGetByDimension(dim, 1);
     }
-    
+
     @Test
     public void testByClassAndDimensionVolume() {
         Unit<?> result = sou.getUnit(Volume.class);
@@ -108,7 +117,7 @@ public class UnitsTest {
         Dimension dim = result.getDimension();
         assertNotNull(dim);
         assertEquals(UnitDimension.LENGTH.multiply(UnitDimension.LENGTH)
-        		.multiply(UnitDimension.LENGTH), dim);        
+        		.multiply(UnitDimension.LENGTH), dim);
         testGetByDimension(dim, 2);
         assertEquals(1, dim.getBaseDimensions().size());
     }
@@ -146,7 +155,7 @@ public class UnitsTest {
 		assertNotNull(u.getName());
 		assertEquals(WATT.getName(), u.getName());
 	}
-	
+
     @Test
     public void testByStringCel() {
         final Unit<?> u = sou.getUnit("\u2103");
@@ -200,5 +209,13 @@ public class UnitsTest {
 		Set<? extends Unit<?>> units = sou.getUnits(dim);
 		assertNotNull(units);
 		assertEquals(expectedSize, units.size());
+	}
+
+	@ParameterizedTest
+	@MethodSource("getUnits")
+	public void testNonNullNameSymbols(Unit<?> unit){
+		assertNotNull(unit.toString());
+		assertNotNull(unit.getName());
+		assertNotNull(unit.getSymbol());
 	}
 }
